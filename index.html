@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تحميل التطبيق - Download App</title>
+  <script src='//libtl.com/sdk.js' data-zone='9503462' data-sdk='show_9503462'></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 30px;
+      background-color: #f3f3f3;
+    }
+    .btn {
+      display: none;
+      padding: 12px 24px;
+      background-color: #0088cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    .waiting, .countdown, .error {
+      font-size: 18px;
+      color: #444;
+      margin-top: 20px;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+
+  <script>
+    const appID = new URLSearchParams(window.location.search).get("app") || "1";
+
+    async function fetchLinkAndShowAd() {
+      const waitText = document.getElementById("wait-text");
+      const countdown = document.getElementById("countdown");
+      const timerSpan = document.getElementById("timer");
+      const downloadBtn = document.getElementById("download-btn");
+      const errorText = document.getElementById("error-text");
+
+      try {
+        const response = await fetch("https://atlasdroid.com/monetag-app/links.json");
+        const links = await response.json();
+        console.log(links); // ✅ عرض محتوى JSON في وحدة التحكم
+        const actualLink = links[appID];
+
+        if (!actualLink) {
+          waitText.style.display = "none";
+          errorText.style.display = "block";
+          errorText.textContent = "❌ لم يتم العثور على الرابط.";
+          return;
+        }
+
+        downloadBtn.href = actualLink;
+
+        const checkReady = setInterval(() => {
+          if (typeof show_9503462 !== "undefined") {
+            clearInterval(checkReady);
+            show_9503462().then(() => {
+              waitText.style.display = "none";
+              countdown.style.display = "block";
+              let timeLeft = 10;
+              const countdownInterval = setInterval(() => {
+                timeLeft--;
+                timerSpan.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                  clearInterval(countdownInterval);
+                  countdown.style.display = "none";
+                  downloadBtn.style.display = "inline-block";
+                }
+              }, 1000);
+            }).catch(() => {
+              waitText.style.display = "none";
+              errorText.style.display = "block";
+              errorText.textContent = "⚠️ لم يتم عرض الإعلان. حاول لاحقًا.";
+            });
+          }
+        }, 500);
+      } catch (err) {
+        waitText.style.display = "none";
+        errorText.style.display = "block";
+        errorText.textContent = "⚠️ فشل في تحميل البيانات.";
+      }
+    }
+
+    window.onload = fetchLinkAndShowAd;
+  </script>
+</head>
+
+<body>
+  <h2>📲 تحميل التطبيق - Download App</h2>
+  <p>🎁 شاهد الإعلان ثم سيظهر زر التحميل</p>
+  <div class="waiting" id="wait-text">⏳ جارٍ عرض الإعلان...</div>
+  <div class="countdown" id="countdown" style="display:none;">⏳ الرجاء الانتظار: <span id="timer">10</span> ثواني</div>
+  <div class="error" id="error-text" style="display:none;"></div>
+  <a href="#" id="download-btn" class="btn">⬇️ تحميل الآن</a>
+</body>
+</html>
