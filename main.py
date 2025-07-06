@@ -4,6 +4,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import json
 import os
+import time
 
 load_dotenv()
 
@@ -30,9 +31,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     args = context.args
 
-    app_id = args[0] if args else "1"  # القيمة الافتراضية "1" إن لم يُحدد شيء
-
+    app_id = args[0] if args else "1"
     new_user = log_user_once(user.id, user.first_name)
+
     if new_user:
         await context.bot.send_message(
             chat_id=ADMIN_ID,
@@ -47,7 +48,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     download_link = f"{BASE_URL}?app={app_id}"
-
     keyboard = [[InlineKeyboardButton("⬇️ تحميل الآن", url=download_link)]]
 
     await update.message.reply_text(
@@ -56,10 +56,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="Markdown"
     )
 
-# تشغيل البوت
+# تشغيل البوت فقط بين 10:00 و 23:59
+def is_allowed_time():
+    now = datetime.now().hour
+    return 10 <= now < 24
+
 if __name__ == '__main__':
-    BOT_TOKEN = os.environ["BOT_TOKEN"]
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    print("✅ Bot is running...")
-    app.run_polling()
+    while True:
+        if is_allowed_time():
+            print("✅ Running bot...")
+            BOT_TOKEN = os.environ["BOT_TOKEN"]
+            app = ApplicationBuilder().token(BOT_TOKEN).build()
+            app.add_handler(CommandHandler("start", start))
+            app.run_polling()
+        else:
+            print("⏳ خارج أوقات التشغيل. سينام البوت 1 ساعة...")
+            time.sleep(3600)  # ينام ساعة كاملة
