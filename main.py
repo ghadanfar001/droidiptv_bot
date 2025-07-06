@@ -11,6 +11,10 @@ load_dotenv()
 ADMIN_ID = 7325074035
 LOG_FILE = "downloads.txt"
 BASE_URL = "https://atlasdroid.com/monetag-app/index.html"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+if not BOT_TOKEN:
+    raise Exception("❌ BOT_TOKEN غير مضبوط في متغيرات البيئة")
 
 # تسجيل المستخدم مرة واحدة فقط
 def log_user_once(user_id, name):
@@ -61,14 +65,14 @@ def is_allowed_time():
     now = datetime.now().hour
     return 10 <= now < 24
 
+# نقطة التشغيل
 if __name__ == '__main__':
     while True:
         if is_allowed_time():
             print("✅ Running bot...")
-            BOT_TOKEN = os.environ["BOT_TOKEN"]
             app = ApplicationBuilder().token(BOT_TOKEN).build()
             app.add_handler(CommandHandler("start", start))
             app.run_polling()
         else:
-            print("⏳ خارج أوقات التشغيل. سينام البوت 1 ساعة...")
-            time.sleep(3600)  # ينام ساعة كاملة
+            print("⏳ خارج أوقات التشغيل. سينام البوت ساعة واحدة...")
+            time.sleep(3600)
